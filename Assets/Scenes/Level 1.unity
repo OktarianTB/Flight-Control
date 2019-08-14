@@ -215,7 +215,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 376181605}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7, y: 6.5, z: 0}
+  m_LocalPosition: {x: -10.17, y: 6.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 515017188}
@@ -416,7 +416,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 665022328}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.35, y: -1.69, z: 0}
+  m_LocalPosition: {x: -3.341, y: -1.813, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.234}
   m_Children: []
   m_Father: {fileID: 0}
@@ -443,6 +443,8 @@ MonoBehaviour:
   - {fileID: 1719618968}
   - {fileID: 1235833489}
   - {fileID: 2138491929}
+  planeDestination: {x: 0, y: 0, z: 0}
+  currentPlaneVector: {x: 0, y: 0}
 --- !u!120 &665022332
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -503,8 +505,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 1}
-      key1: {r: 0.26415092, g: 0.25792095, b: 0.25792095, a: 1}
+      key0: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
+      key1: {r: 0.31132078, g: 0.31132078, b: 0.31132078, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}

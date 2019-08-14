@@ -9,14 +9,16 @@ public class Plane : MonoBehaviour
 
     public float speed = 0.005f;
     public Transform[] destinations;
-    private Vector3 planeDestination;
+    public Vector3 planeDestination;
     private Vector2 startVector;
+    public Vector2 currentPlaneVector;
+    private Vector2 destinationVector;
     private bool getNewDestination = false;
     private int pointsIndex;
 
     LineRenderer lineRenderer;
     private List<Vector3> points;
-    private List<Vector3> pointsCopy; // Used to access trajectory whilst original is modified
+    private List<Vector3> pointsCopy; // Used to access trajectory whilst original is modified - this one only resets when new line is created
     private float minDistance = 0.07f;
     bool isDrawingLine = false;
     bool resetLine = false;
@@ -25,6 +27,7 @@ public class Plane : MonoBehaviour
     {
         planeDestination = GetInitialDestination();
         startVector = new Vector2(1, 1);
+        currentPlaneVector = startVector;
 
         StartCoroutine(SetInitialRotation());
 
@@ -37,7 +40,7 @@ public class Plane : MonoBehaviour
             Debug.LogWarning("Component is missing from Plane");
         }
     }
-    
+
     void Update()
     {
         if (getNewDestination && (Vector3.Distance(transform.position, planeDestination) <= 0.005f || pointsIndex == 0))
@@ -47,12 +50,12 @@ public class Plane : MonoBehaviour
 
         transform.position = Vector3.MoveTowards(transform.position, planeDestination, speed * Time.deltaTime);
 
-        if(Input.GetMouseButtonUp(0) && isDrawingLine) // Stop drawing
+        if (Input.GetMouseButtonUp(0) && isDrawingLine) // Stop drawing
         {
             isDrawingLine = false;
             resetLine = true;
 
-            RayTrajectoryDebug();
+            //RayTrajectoryDebug();
         }
         else if (isDrawingLine)
         {
@@ -64,19 +67,28 @@ public class Plane : MonoBehaviour
     {
         try
         {
-            if(pointsIndex < pointsCopy.Count - 1)
+            if (pointsIndex < pointsCopy.Count - 1)
             {
                 Vector2 newDestination = pointsCopy[pointsIndex];
                 planeDestination = new Vector3(newDestination.x, newDestination.y, 0);
 
+                if(pointsIndex > 0)
+                {
+                    points.Remove(points.First());
+                    lineRenderer.positionCount = points.Count;
+                    lineRenderer.SetPositions(points.ToArray());
+                }
+
             }
             else
             {
-                Vector2 newDestination = pointsCopy[pointsCopy.Count -1] + (pointsCopy[pointsCopy.Count-1] - pointsCopy[pointsCopy.Count-2])*100f;
+                Vector2 newDestination = pointsCopy[pointsCopy.Count - 1] + (pointsCopy[pointsCopy.Count - 1] - pointsCopy[pointsCopy.Count - 2]) * 100f;
                 planeDestination = new Vector3(newDestination.x, newDestination.y, 0);
                 getNewDestination = false;
+                lineRenderer.positionCount = 0;
             }
             pointsIndex++;
+            SetPlaneRotation();
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -84,12 +96,32 @@ public class Plane : MonoBehaviour
         }
     }
 
+    private void SetPlaneRotation()
+    {
+        if(pointsIndex + 1 < pointsCopy.Count)
+        {
+            Vector2 newDirection = new Vector2(pointsCopy[pointsIndex+1].x - pointsCopy[pointsIndex].x, pointsCopy[pointsIndex+1].y - pointsCopy[pointsIndex].y);
+            //Debug.DrawRay(pointsCopy[pointsIndex], newDirection * 2, Color.red, 20f, true);
+            //Debug.DrawRay(pointsCopy[pointsIndex], startVector, Color.blue, 20f, true);
+            float angle = Vector2.Angle(startVector, newDirection);
+
+            if (newDirection.x >= 0 && newDirection.y <= 0 || newDirection.x > newDirection.y)
+            {
+                angle *= -1f;
+            }
+
+            print(angle);
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        }
+
+    }
+
     private void RayTrajectoryDebug()
     {
         for (int i = 0; i < points.Count - 1; i++)
         {
             Vector2 newDirection = points[i + 1] - points[i];
-            Debug.DrawRay(points[i], newDirection*5, Color.blue, 2000f, true);
+            Debug.DrawRay(points[i], newDirection * 5, Color.blue, 20f, true);
         }
     }
 
@@ -97,7 +129,6 @@ public class Plane : MonoBehaviour
     {
         Transform random_destination = destinations[UnityEngine.Random.Range(0, destinations.Length)];
         Vector3 dest = new Vector3(random_destination.position.x, random_destination.position.y, 0);
-        print(dest);
         return dest;
     }
 
@@ -105,23 +136,25 @@ public class Plane : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        Vector2 destinationVector = new Vector2(planeDestination.x - transform.position.x, planeDestination.y - transform.position.y);
+        destinationVector = new Vector2(planeDestination.x - transform.position.x, planeDestination.y - transform.position.y);
 
         float x = Vector2.Dot(startVector, destinationVector) / (destinationVector.magnitude * startVector.magnitude);
         float angleToTurn = Mathf.Rad2Deg * Mathf.Acos(x);
 
         // Check what direction to turn:
         float a = planeDestination.x + transform.position.y - transform.position.x;
-        if(a > planeDestination.y)
+        if (a > planeDestination.y)
         {
             angleToTurn *= -1f;
-        } 
+        }
 
         print(angleToTurn);
 
         transform.Rotate(0f, 0f, angleToTurn, Space.Self);
+        //Debug.DrawRay(transform.position, destinationVector, Color.red, 1000f, true);
 
-        Debug.DrawRay(transform.position, destinationVector, Color.red, 2000f, true);
+        currentPlaneVector = Quaternion.Euler(0, 0, angleToTurn) * currentPlaneVector;
+        Debug.DrawRay(transform.position, currentPlaneVector*3f, Color.magenta, 300f, true);
     }
 
     private void OnMouseDown()
@@ -149,10 +182,10 @@ public class Plane : MonoBehaviour
             return;
         }
 
-        if(points.Count == 2)
+        if (pointsCopy.Count == 2)
         {
-            getNewDestination = true;
             pointsIndex = 0;
+            getNewDestination = true;
         }
 
         float distance = Vector2.Distance(points.Last(), mousePosition);
