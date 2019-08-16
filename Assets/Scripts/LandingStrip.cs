@@ -45,7 +45,7 @@ public class LandingStrip : MonoBehaviour
             Vector3 objPos = plane.transform.position;
             float distance = Vector2.Distance(new Vector2(objPos.x, objPos.y), exitPos);
 
-            if(distance < 1f)
+            if(distance < 1.4f)
             {
                 planes.Remove(plane);
                 StartCoroutine(LandPlane(plane));
@@ -77,10 +77,9 @@ public class LandingStrip : MonoBehaviour
         Vector3 objPos = plane.transform.position;
         float distance = Vector2.Distance(new Vector2(objPos.x, objPos.y), enterPos);
 
-        if(distance < 1.2f)
+        if(distance < 1.6f)
         {
             planes.Add(plane.gameObject);
-            print("entered");
         }
     }
 

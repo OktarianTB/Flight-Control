@@ -8,7 +8,6 @@ public class Plane : MonoBehaviour
 {
 
     public float speed = 1f;
-    public Transform[] destinations;
     private Vector3 planeDestination; // the plane will head towards this location
     private Vector2 startVector = new Vector2(1, 1);
     private bool getNewDestination = false;
@@ -33,8 +32,7 @@ public class Plane : MonoBehaviour
     void Start()
     {
         planeDestination = GetInitialDestination();
-
-        StartCoroutine(SetInitialRotation());
+        SetInitialRotation();
 
         try
         {
@@ -55,19 +53,21 @@ public class Plane : MonoBehaviour
 
         transform.position = Vector3.MoveTowards(transform.position, planeDestination, speed * Time.deltaTime);
 
+        ManageLineInput();
+        Rotate();
+    }
+
+    private void ManageLineInput()
+    {
         if (Input.GetMouseButtonUp(0) && isDrawingLine) // Stop drawing
         {
             isDrawingLine = false;
             resetLine = true;
-
-            //RayTrajectoryDebug();
         }
         else if (isDrawingLine)
         {
             DrawLine();
         }
-
-        Rotate();
     }
 
     private void GetPlaneDirection()
@@ -115,29 +115,19 @@ public class Plane : MonoBehaviour
 
     }
 
-    private void RayTrajectoryDebug()
-    {
-        for (int i = 0; i < points.Count - 1; i++)
-        {
-            Vector2 newDirection = points[i + 1] - points[i];
-            Debug.DrawRay(points[i], newDirection * 5, Color.blue, 20f, true);
-        }
-    }
-
     private Vector3 GetInitialDestination() // After spawning, the plane will head to this direction until the player sets it's new trail
     {
-        Transform random_destination = destinations[UnityEngine.Random.Range(0, destinations.Length)];
-        Vector3 dest = new Vector3(random_destination.position.x, random_destination.position.y, 0);
-        return dest;
+        Vector3 planeToOrigin = new Vector3(-transform.position.x, -transform.position.y, 0f);
+        float randomAngle = UnityEngine.Random.Range(-20, 20);
+        planeToOrigin = Quaternion.Euler(0, 0, randomAngle) * planeToOrigin * 5f;
+        return planeToOrigin;
     }
 
-    private IEnumerator SetInitialRotation() // Calculate the initial rotation of the plane
+    private void SetInitialRotation()
     {
-        yield return new WaitForEndOfFrame();
-
-        Vector2 destinationVector = new Vector2(planeDestination.x - transform.position.x, planeDestination.y - transform.position.y);
-        GetAngle(destinationVector);
-        Debug.DrawRay(transform.position, destinationVector, Color.red, 20f, true);
+        Vector2 initialDirection = planeDestination - transform.position;
+        GetAngle(initialDirection);
+        Debug.DrawRay(transform.position, initialDirection, Color.red, 20f, true);
     }
 
     private void GetAngle(Vector2 directionVector)
@@ -259,6 +249,23 @@ public class Plane : MonoBehaviour
 
         lineRenderer.positionCount = points.Count;
         lineRenderer.SetPosition(points.Count - 1, point);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collisionObj)
+    {
+        if (collisionObj.GetComponent<Plane>())
+        {
+            print("GAME OVER");
+        }
+    }
+
+    private void OnBecameInvisible()
+    {
+        resetLine = true;
+        getNewDestination = false;
+        lineRenderer.positionCount = 0;
+        planeDestination = GetInitialDestination();
+        GetAngle(planeDestination-transform.position);
     }
 
 }
