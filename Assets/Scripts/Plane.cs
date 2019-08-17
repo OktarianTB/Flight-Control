@@ -8,7 +8,7 @@ public class Plane : MonoBehaviour
 {
 
     public float speed = 1f;
-    private Vector3 planeDestination; // the plane will head towards this location
+    public Vector3 planeDestination; // the plane will head towards this location
     private Vector2 startVector = new Vector2(1, 1);
     private bool getNewDestination = false;
     private int pointsIndex;
@@ -63,6 +63,11 @@ public class Plane : MonoBehaviour
         {
             isDrawingLine = false;
             resetLine = true;
+
+            if (positions.Count > 1)
+            {
+                getNewDestination = true;
+            }
         }
         else if (isDrawingLine)
         {
@@ -93,12 +98,15 @@ public class Plane : MonoBehaviour
                 getNewDestination = false;
                 lineRenderer.positionCount = 0;
             }
+
             pointsIndex++;
             SetPlaneRotation();
         }
         catch (ArgumentOutOfRangeException)
         {
-            planeDestination = GetInitialDestination();
+            print("Error");
+            getNewDestination = false;
+            lineRenderer.positionCount = 0;
         }
     }
 

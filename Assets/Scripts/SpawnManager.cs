@@ -19,13 +19,13 @@ public class SpawnManager : MonoBehaviour
     {
         {0, 4},
         {1, 6},
-        {2, 4},
+        {2, 8},
         {3, 7},
         {4, 6},
-        {5, 8},
+        {5, 10},
         {6, 6},
         {7, 8},
-        {8, 6},
+        {8, 9},
         {9, 6},
         {10, 8},
     };
@@ -101,6 +101,7 @@ public class SpawnManager : MonoBehaviour
         while (true)
         {
             Vector3 spawnPosition = allPositions[Random.Range(0, allPositions.Count)];
+
             if(!usedPositions.Contains(spawnPosition)){
                 if(usedPositions.Count == 3)
                 {
